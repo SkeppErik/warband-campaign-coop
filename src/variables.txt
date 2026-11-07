@@ -1282,3 +1282,12 @@ fc_prices_dict_ok
 fc_inv_troop_0
 fc_inv_troop_1
 fc_screen_open
+fc_talk_request
+fc_talk_troop
+fc_talk_party
+fc_repeat_object
+fc_talk_state
+fc_num_parties
+fc_dialog_next
+fc_dialog_auto
+fc_dialog_options

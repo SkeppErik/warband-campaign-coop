@@ -1,6 +1,7 @@
 """Every change we make to the module system's lists, in the order they apply (tools/fcpatch.py)."""
 import fc_authority
 import fc_console
+import fc_dialogs
 import fc_items
 import fc_menus
 import fc_net
@@ -13,4 +14,5 @@ patches = (
     + fc_players.patches
     + fc_console.patches
     + fc_items.patches
+    + fc_dialogs.patches
 )

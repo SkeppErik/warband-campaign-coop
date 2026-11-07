@@ -481,7 +481,12 @@ server_scripts = [
         (troop_set_slot, ":mine", fc_slot_troop_screen_troop, 0),
         (troop_set_slot, ":other", fc_slot_troop_session, 0),
         (call_script, "script_fc_send_inventory", ":player", 0, ":mine"),
-        (call_script, "script_fc_menu_show", ":player"),
+        (try_begin),
+            (troop_slot_ge, ":mine", fc_slot_troop_dialog, 1),
+            (call_script, "script_fc_dialog_choice", ":player", -1),   # a trade inside a conversation: go on
+        (else_try),
+            (call_script, "script_fc_menu_show", ":player"),
+        (try_end),
     ]),
 
     # In the player's context: the client sent its own inventory after an inventory/party/character window.

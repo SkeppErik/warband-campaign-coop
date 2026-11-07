@@ -64,7 +64,26 @@ mirrored), so native menus can't run on the client. They run on the server, for 
 - Deviations: prices don't rise while you buy within one visit (they change when the trade is done); the server
   checks that nothing is created, not that the client paid native's price.
 
+## Conversations (`src/fc_dialogs.py`)
+
+- Native dialogs run on the server in the player's context, shown in the remote menu: the NPC's line ("Name:
+  line") as the text, the player's lines as the options ("Continue." after a line that ends the conversation or
+  proceeds by itself). Started where native starts them: `change_screen_map_conversation` (state "start", e.g. party
+  encounters through `script_setup_party_meeting`, castle meetings) and `start_map_conversation` (state
+  "event_triggered"); "close_window" ends them.
+- Build: per sentence a conditions and a consequences script (where not empty), per state one script (NPC line,
+  player lines, chosen line). Speakers: anyone / a troop / a party template (`party_tpl`); `repeat_for_*` lines
+  once per faction, party, troop or number (the object goes through `store_repeat_object`, rewritten).
+- Operations that write a destination (`store_conversation_troop`, `store_repeat_object`, `store_encountered_party`,
+  ...) are expanded inline: the per-player value inside a context, the native operation outside.
+- What a conversation's consequences ask for (another menu, closing, missions) happens when it ends; a trade screen
+  opens at once and the conversation goes on after it.
+- Not reachable yet: conversations inside scenes (taverns, guild masters, village elders, walking in towns): they
+  need missions. Deviation: shown as a text menu, not the 3D conversation screen.
+- Module system fix: `process_operations.py` crashed when two quick strings got the same id (`has_key` on a list);
+  the build patches it (`tools/build.py` `fix_module_system`).
+
 ## Not yet (later milestones)
 
-Missions (walking in towns, battles, sieges), conversations (and the trades they open), waiting/resting,
+Missions (walking in towns, battles, sieges, conversations inside scenes), waiting/resting,
 presentations started from menus. Each says "not available in co-op yet" and keeps the player in the menu.

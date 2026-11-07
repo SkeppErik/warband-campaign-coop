@@ -57,8 +57,11 @@ Each milestone ends with a build, and with an in-game check only when the owner 
   (`docs/encounters.md`, `src/fc_menus.py`): reaching a town, village or party opens native's menu; options work
   where they only change the world (recruiting, leaving, menu to menu); missions, trade/loot screens,
   conversations and waiting say "not available in co-op yet". Native code's messages reach the player.
-  **Part 2 built 2026-11-08, not tested: trade and loot screens from menus, the own inventory window** (items and
+  **Part 2 built 2026-11-08, owner checked: trade from town menus and the own inventory window work** (loot from menus
+  built, not seen yet) (items and
   gold synced, checked by the server; `docs/encounters.md` "Items").
+  **Part 3 built 2026-11-08, not tested: conversations** started from the map and menus (party encounters, castle
+  meetings), native dialogs run on the server, shown as a text menu (`docs/encounters.md` "Conversations").
 - **M4 Local battles:** fight on your own client, casualties/XP/loot/prisoners applied as native does.
 - **M5 Shared battles:** players fight together on a battle server.
 - **M6 Our features, rebuilt:** joining battles under way, raiding villages, conversations on the map, sieges
@@ -81,6 +84,7 @@ Everything should work as native does; what doesn't is listed here (temporary on
   set (honour, kingdom choices, town visit state...) is theirs, and world triggers see the world's copy.
 - Temporary until M4: a battle event with a player's party is never auto-resolved (the player chooses in the menu).
 - Trade prices don't rise while you keep buying in one visit; they change when the trade is done.
+- Conversations show as a text menu (the NPC's line and your answers), not the 3D conversation screen.
 
 ## Battle design (decided 2026-11-07)
 

@@ -84,8 +84,21 @@ def stage_module_system(source, out_src, record):
 def replace_once(text, pattern, replacement, what):
     new, n = re.subn(pattern, replacement, text, count=1, flags=re.S)
     if n != 1:
-        raise BuildError("WSE2 SDK edit not applicable (%s): the module system file is not the expected version" % what)
+        raise BuildError("module system edit not applicable (%s): the module system file is not the expected version"
+                         % what)
     return new
+
+
+def fix_module_system(src):
+    """TaleWorlds bugs our code reaches and native doesn't."""
+    path = os.path.join(src, "process_operations.py")
+    text = read(path)
+    # insert_quick_string_with_auto_id: when two different texts give the same id (e.g. "Yes." and "Yes!"), the
+    # fallback calls has_key on the quick string list (a list, not a dict) and the build crashes
+    text = replace_once(text, r"while quick_strings\.has_key\(new_auto_id\):",
+                        "while search_quick_string_keys(new_auto_id, quick_strings) >= 0:",
+                        "quick string id fallback")
+    write(path, text)
 
 
 def apply_wse2_sdk(sdk, src, record):
@@ -246,6 +259,7 @@ def main(argv=None):
     try:
         stage_module_system(os.path.abspath(args.module_system), src, record)
         addons = apply_wse2_sdk(os.path.abspath(args.wse2_sdk), src, record)
+        fix_module_system(src)
         wrapped = wrap_lists(src, addons)
         install_our_code(os.path.abspath(args.src), src, export_dir)
         write(os.path.join(out, "inputs.txt"), "\n".join(record) + "\n")

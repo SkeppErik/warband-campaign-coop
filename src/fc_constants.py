@@ -14,6 +14,8 @@ fc_slot_troop_menu = 903    # menu_no + 1 of the menu the player sees (server, d
 fc_slot_troop_screen_kind = 904    # trade/loot screen session of this player (fc_items): 1 trade, 2 loot, 0 none
 fc_slot_troop_screen_troop = 905   # the other troop of that session
 fc_slot_troop_session = 906        # on a merchant/loot troop: pool slot + 1 of the player trading with it
+fc_slot_troop_dialog = 907         # dialog state + 1 of the player's conversation (fc_dialogs), 0 = none
+fc_slot_troop_dialog_pending = 908 # 1 = the player sees "Continue." (the NPC goes on in that state)
 fc_slot_ctx_base = 1000     # 1000 + i: the player's copy of menu global i (and trp_player's: the world's copy)
 
 # Battles: how close (map distance) another player must be to the fight to be offered to join it.
@@ -37,6 +39,7 @@ fc_msg_price = 11       # server -> client: (item, buy factor, sell factor)
 fc_msg_screen_open = 12 # server -> client: (kind 1 trade / 2 loot, troop)
 fc_msg_screen_done = 13 # client -> server: (kind): back from the screen, both inventories were sent
 fc_msg_inv_update = 14  # client -> server: our inventory (just sent) after an item window
+fc_dialog_menu_no = -2  # menu_no of a conversation shown in the remote menu
 fc_items_max_slots = 120    # inventory slots that travel (equipment 0-9 and the bag)
 fc_event_text = 126     # string messages (text pieces of up to 250 characters, s0 on the client)
 fc_event_message = 127  # string message: show it (display_message of native code running for that player)

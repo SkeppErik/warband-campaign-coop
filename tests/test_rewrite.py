@@ -37,6 +37,13 @@ class RewriteTests(unittest.TestCase):
         block = [(JUMP | NEG, "mnu_town"), (ASSIGN, ":p_main_party", "p_main_party_backup")]
         self.assertEqual(self.run_block(block), block)
 
+    def test_destination_ops_expand_inline(self):
+        STORE = 2200
+        expand = {STORE: lambda args: [(4,), (ASSIGN, args[0], "$fc_talk_troop"), (3,)]}
+        out = rw.rewrite_block([(STORE, "$g_talk_troop"), (STORE | NEG, ":x")], self.replace, self.rename, CALL,
+                               expand)
+        self.assertEqual(out, [(4,), (ASSIGN, "$g_talk_troop", "$fc_talk_troop"), (3,), (STORE | NEG, ":x")])
+
     def test_written_globals(self):
         block = [(ASSIGN, "$g_a", 1), (ASSIGN | NEG, "$g_b", 1), (ASSIGN, ":local", 1), (JUMP, "$g_c"),
                  (ASSIGN, "$g_a", 2)]

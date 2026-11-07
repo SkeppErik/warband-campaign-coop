@@ -40,6 +40,9 @@ FAKE_MS = {
                            try_for_parties,
                            try_for_agents]):
               return 1
+        def y(quick_strings, new_auto_id):
+            while quick_strings.has_key(new_auto_id):
+              pass
         '''),
     "process_skins.py": "def save(skins):\n  if len(skins) > 16:\n    skins = skins[0:15]\n  return skins\n",
     "build_module.bat": "python process_init.py\npython process_scripts.py\n@pause\n",
@@ -104,6 +107,8 @@ class BuildTests(unittest.TestCase):
         self.assertIn("try_for_agents, try_for_prop_instances, try_for_players, try_for_dict_keys",
                       self.staged("process_operations.py"))
         self.assertNotIn("len(skins) > 16", self.staged("process_skins.py"))
+        self.assertIn("while search_quick_string_keys(new_auto_id, quick_strings) >= 0:",
+                      self.staged("process_operations.py"))
         self.assertIn("store_random = 2135", self.staged("header_operations.py"))
         self.assertIn("from fc_constants import *", self.staged("module_constants.py"))
         self.assertIn(os.path.join(self.out, "module").replace("\\", "/"), self.staged("module_info.py"))

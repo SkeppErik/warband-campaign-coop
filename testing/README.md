@@ -12,6 +12,8 @@
   need a mission, a trade/loot screen, a conversation or waiting say "not available in co-op yet".
 - Trade (M3 part 2): in a town, the trade options open native's trade screen with the merchant's goods and your
   gold; buy and sell, close it, and the menu comes back. Your inventory window (I) should keep what you rearrange.
+- Conversations (M3 part 3): ride into a lord's party, a caravan or bandits: after the encounter menu the
+  conversation shows as "Name: line" with your answers as options.
 - Server console commands (ours): `fc_save` saves the world now; `fc_characters` lists the characters, whose they
   are and who is connected.
 - `fc_client.bat`: starts a game client with our module. In the game: **Multiplayer**, then WSE2's **Join a
