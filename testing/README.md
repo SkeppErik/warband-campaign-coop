@@ -9,6 +9,8 @@
   campaign** button on the profile screen (it needs `bHasMultiplayerCampaign=true` in the module's
   `module_config.ini`, which the install adds). Fallback: **Start a new game**, then **Join the co-op campaign on
   this PC**.
+- `fc_join.bat`: starts a client that connects straight to the campaign server on this PC, with WSE2's launch
+  options `--address 127.0.0.1:7240 --campaign` (found in the WSE2 executable; edit the address for another PC).
 - `fc_server.txt`: server names can't contain spaces; `set_max_players` takes two numbers (players, private
   players).
 
