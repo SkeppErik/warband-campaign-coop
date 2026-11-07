@@ -22,7 +22,14 @@ our changes on top:
 python tools/build.py --module-system <module system zip or folder> --wse2-sdk <WSE2 SDK folder>
 ```
 
-The result is in `build/module`. Requirements: Python 2.7 (the module system doesn't run on Python 3; on Windows
+The result is in `build/module`. To try it, install it into a **test copy** of the game (never your real install;
+the tool refuses anything inside a Steam library):
+
+```
+python tools/install.py --game <test copy of Warband>
+```
+
+It creates `Modules/CampaignCoop` from native's own module folder plus the built files. Requirements: Python 2.7 (the module system doesn't run on Python 3; on Windows
 the build looks for `C:\Python27\python.exe`, or pass `--py27`).
 
 ## Layout
@@ -30,7 +37,7 @@ the build looks for `C:\Python27\python.exe`, or pass `--py27`).
 | Path | What's there |
 |---|---|
 | `src/` | The mod: `fc_*.py` files, each with its patches; `fc_patches.py` lists them all |
-| `tools/` | `build.py` (the build) and `fcpatch.py` (the patch operations) |
+| `tools/` | `build.py` (the build), `fcpatch.py` (the patch operations), `install.py` (into a test copy) |
 | `tests/` | Tests for the tools: `python tests/test_fcpatch.py`, `python tests/test_build.py` (Python 2.7 or 3) |
 | `docs/` | The plan and the design notes |
 

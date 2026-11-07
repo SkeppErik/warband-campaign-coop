@@ -32,7 +32,8 @@ This mod is not a fork of any other co-op mod and uses none of their code.
 Each milestone ends with a build, and with an in-game check only when the owner says go.
 
 - **M0 Clean base:** official module system + WSE2 addons build; build script; a clean test copy of the game
-  (copied from the Steam install, WSE2 added, nothing from other mods).
+  (copied from the Steam install, WSE2 added, nothing from other mods). **Done 2026-11-07:** the full build runs
+  against module system 1.171 and the official WSE2 SDK; `tools/install.py` puts it into the test copy.
 - **M1 Shared map:** dedicated campaign server, two clients on one map with their own parties; joining, leaving.
 - **M2 Characters and saves:** identity, character creation, the character store, world save and restore, rejoin.
 - **M3 Life on the map:** clock and pause rules, encounters and their menus, talking to parties, towns and villages
