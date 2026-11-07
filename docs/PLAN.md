@@ -1,4 +1,4 @@
-# Warband Full Co-op: rebuild plan
+# Warband Campaign Co-op: plan
 
 Goal: the whole Mount & Blade: Warband single-player campaign in co-op, written from scratch. Every feature works
 like single player; anything that differs is listed in the README.
@@ -44,6 +44,23 @@ Each milestone ends with a build, and with an in-game check only when the owner 
 - **M7 The rest of the campaign:** arena, tournaments, training grounds, quests, courtship, companions, kingdoms
   (mercenary, vassal, fiefs, marshals), enterprises.
 - **M8 Ship:** an installer package friends can use, a one-click host and join.
+
+## Build design
+
+The repository holds no TaleWorlds or WSE2 files. `tools/build.py` unpacks the official module system, applies the
+WSE2 SDK as its README describes, and replaces each native list file with a wrapper that runs the native list
+through our patches (`tools/fcpatch.py`, patches in `src/`). New troops and parties are appended after native's, so
+native ids never move. The order of global variables is pinned in `src/variables.txt` (part of the save format).
+
+## Open questions for M1 (check in game)
+
+- Does WSE2's campaign server fire `ti_on_player_join` / `ti_on_player_exit` as simple triggers, with the player
+  in trigger parameter 1? (`src/fc_players.py` assumes so.)
+- How a dedicated campaign server starts its world (native `game_start`, a new or a loaded save) and what a
+  connecting client is shown before it has a party.
+- Whether the client follows its own party on the map by itself or needs to be told.
+- Our slot numbers (`fc_slot_*` = 900+) must not collide with native's: add a build check once the module system
+  is in.
 
 ## Needed before M0
 

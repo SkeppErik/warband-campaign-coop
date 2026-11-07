@@ -1,0 +1,257 @@
+"""Builds the module from the official module system, the WSE2 SDK and our code in src/.
+
+    python tools/build.py --module-system <zip or folder> --wse2-sdk <folder> [--out <folder>] [--py27 <python>]
+
+Steps (all inside <out>, nothing outside it is changed):
+  1. <out>/src: the official module system, unpacked as it is.
+  2. WSE2 SDK: header_*_addon.py appended to their headers, the script and presentation addons added to their
+     lists, and the two process_*.py edits the SDK describes.
+  3. Every list file in fcpatch.LISTS becomes a wrapper: the native list (+ WSE2's entries) through our patches.
+     module_constants.py gets our constants (src/fc_constants.py) appended.
+  4. Our src/*.py and tools/fcpatch.py are copied in; export_dir points at <out>/module, seeded with our pinned
+     src/variables.txt (the order of global variables is part of the save format).
+  5. The module system's own steps (from its build_module.bat) run with Python 2.7.
+
+Any step that does not find what it expects stops the build.
+"""
+from __future__ import print_function
+
+import argparse
+import hashlib
+import os
+import re
+import shutil
+import subprocess
+import sys
+import zipfile
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(HERE)
+sys.path.insert(0, HERE)
+import fcpatch  # noqa: E402
+
+
+class BuildError(Exception):
+    pass
+
+
+def sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 16), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def read(path):
+    with open(path, "rb") as f:
+        return f.read().decode("latin-1")
+
+
+def write(path, text):
+    with open(path, "wb") as f:
+        f.write(text.encode("latin-1"))
+
+
+def find_module_system(root):
+    """The folder holding module_info.py (an official zip nests it one or two levels down)."""
+    for folder, _dirs, files in os.walk(root):
+        if "module_info.py" in files and "process_init.py" in files:
+            return folder
+    raise BuildError("no module system (module_info.py + process_init.py) under %s" % root)
+
+
+def stage_module_system(source, out_src, record):
+    tmp = out_src + ".unpack"
+    shutil.rmtree(tmp, ignore_errors=True)
+    if os.path.isfile(source) and source.lower().endswith(".zip"):
+        record.append("module system zip %s sha256 %s" % (os.path.basename(source), sha256(source)))
+        with zipfile.ZipFile(source) as z:
+            z.extractall(tmp)
+        found = find_module_system(tmp)
+    elif os.path.isdir(source):
+        found = find_module_system(source)
+        record.append("module system folder %s" % found)
+    else:
+        raise BuildError("--module-system must be the official zip or its unpacked folder: %s" % source)
+    shutil.copytree(found, out_src)
+    shutil.rmtree(tmp, ignore_errors=True)
+    for name in sorted(os.listdir(out_src)):
+        if name.endswith(".py") or name.endswith(".bat"):
+            record.append("  %s %s" % (sha256(os.path.join(out_src, name)), name))
+
+
+def replace_once(text, pattern, replacement, what):
+    new, n = re.subn(pattern, replacement, text, count=1, flags=re.S)
+    if n != 1:
+        raise BuildError("WSE2 SDK edit not applicable (%s): the module system file is not the expected version" % what)
+    return new
+
+
+def apply_wse2_sdk(sdk, src, record):
+    if not os.path.isdir(sdk):
+        raise BuildError("--wse2-sdk folder not found: %s" % sdk)
+    addons = {}
+    for name in sorted(os.listdir(sdk)):
+        path = os.path.join(sdk, name)
+        if os.path.isfile(path):
+            record.append("wse2 sdk %s %s" % (sha256(path), name))
+        m = re.match(r"^(header_\w+)_addon\.py$", name)
+        if m:
+            target = os.path.join(src, m.group(1) + ".py")
+            if not os.path.isfile(target):
+                raise BuildError("WSE2 addon %s has no %s.py to extend" % (name, m.group(1)))
+            write(target, read(target).rstrip() + "\n\n# --- WSE2 SDK: %s\n" % name + read(path) + "\n")
+        m = re.match(r"^(module_\w+)_addon\.py$", name)
+        if m:
+            addons[m.group(1)] = read(path)
+
+    # process_operations_patch.py: the block opcodes also include WSE2's loops
+    path = os.path.join(src, "process_operations.py")
+    text = read(path)
+    text = replace_once(text, r"(try_for_parties,\s*try_for_agents)(\s*\]\s*\)\s*:)",
+                        r"\1, try_for_prop_instances, try_for_players, try_for_dict_keys\2",
+                        "process_operations.py block opcodes")
+    write(path, text)
+    # process_skins_patch.py: no 16-skin cap
+    path = os.path.join(src, "process_skins.py")
+    text = read(path)
+    text = replace_once(text, r"\n[ \t]*if len\(skins\) > 16:\s*\n[ \t]*skins = skins\[0:15\]", "\n",
+                        "process_skins.py skin cap")
+    write(path, text)
+    return addons
+
+
+WRAPPER = '''# Generated by tools/build.py: the native list, WSE2's additions and our patches (src/fc_patches.py).
+from fcnative_{module} import *
+import fcnative_{module} as _native
+import fcpatch
+from fc_patches import patches as _patches
+{wse2_import}
+{var} = fcpatch.apply("{var}", list(_native.{var}) + list(_wse2), _patches)
+'''
+
+
+def wrap_lists(src, addons):
+    wrapped = []
+    for module, var in sorted(fcpatch.LISTS.items()):
+        path = os.path.join(src, module + ".py")
+        if not os.path.isfile(path):
+            if module in addons:
+                raise BuildError("WSE2 has an addon for %s.py, which this module system lacks" % module)
+            continue
+        text = read(path)
+        if not re.search(r"^%s\s*=" % var, text, re.M):
+            raise BuildError("%s.py does not define the list %r" % (module, var))
+        os.rename(path, os.path.join(src, "fcnative_" + module + ".py"))
+        if module in addons:
+            write(os.path.join(src, "wse2_%s_addon.py" % module),
+                  "# WSE2 SDK entries for %s\nfrom fcnative_%s import *\nentries = [\n%s\n]\n"
+                  % (module, module, addons[module]))
+            wse2_import = "from wse2_%s_addon import entries as _wse2" % module
+        else:
+            wse2_import = "_wse2 = []"
+        write(path, WRAPPER.format(module=module, var=var, wse2_import=wse2_import))
+        wrapped.append(module)
+    unused = sorted(set(addons) - set(wrapped))
+    if unused:
+        raise BuildError("WSE2 addons not applied: %s" % ", ".join(unused))
+    return wrapped
+
+
+def install_our_code(our_src, src, export_dir):
+    for name in os.listdir(our_src):
+        if name.endswith(".py"):
+            shutil.copy(os.path.join(our_src, name), src)
+    shutil.copy(os.path.join(HERE, "fcpatch.py"), src)
+
+    path = os.path.join(src, "module_constants.py")
+    write(path, read(path).rstrip() + "\n\n# --- Warband Campaign Co-op\nfrom fc_constants import *\n")
+
+    path = os.path.join(src, "module_info.py")
+    text, n = re.subn(r"^export_dir\s*=.*$", "export_dir = %r" % (export_dir.replace("\\", "/").rstrip("/") + "/"),
+                      read(path), flags=re.M)
+    if n == 0:
+        raise BuildError("module_info.py has no export_dir line")
+    write(path, text)
+
+    os.makedirs(export_dir)
+    pinned = os.path.join(our_src, "variables.txt")
+    if os.path.isfile(pinned):
+        shutil.copy(pinned, export_dir)
+
+
+def process_steps(src):
+    bat = os.path.join(src, "build_module.bat")
+    if not os.path.isfile(bat):
+        raise BuildError("the module system has no build_module.bat to take the step order from")
+    steps = re.findall(r"(process_\w+\.py)", read(bat))
+    if not steps:
+        raise BuildError("no process_*.py steps found in build_module.bat")
+    seen = []
+    for s in steps:
+        if s not in seen:
+            seen.append(s)
+    return seen
+
+
+def run_steps(src, py27):
+    for step in process_steps(src):
+        proc = subprocess.Popen([py27, step], cwd=src, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = proc.communicate()[0].decode("latin-1")
+        bad = [l for l in output.splitlines() if l.startswith("Traceback") or l.strip().upper().startswith("ERROR")]
+        if proc.returncode != 0 or bad:
+            print(output)
+            raise BuildError("%s failed" % step)
+        warnings = [l for l in output.splitlines() if "WARNING" in l.upper()]
+        print("  %-36s ok%s" % (step, " (%d warnings)" % len(warnings) if warnings else ""))
+
+
+def default_py27():
+    if sys.version_info[:2] == (2, 7):
+        return sys.executable
+    return r"C:\Python27\python.exe"
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--module-system", required=True, help="official module system zip or folder")
+    ap.add_argument("--wse2-sdk", required=True, help="WSE2 SDK folder")
+    ap.add_argument("--out", default=os.path.join(REPO, "build"), help="output folder (replaced)")
+    ap.add_argument("--py27", default=default_py27(), help="Python 2.7 for the module system's steps")
+    ap.add_argument("--src", default=os.path.join(REPO, "src"), help="our module code (default: src/)")
+    ap.add_argument("--stage-only", action="store_true", help="prepare <out>/src but don't run the steps")
+    args = ap.parse_args(argv)
+
+    out = os.path.abspath(args.out)
+    src = os.path.join(out, "src")
+    export_dir = os.path.join(out, "module")
+    shutil.rmtree(out, ignore_errors=True)
+    os.makedirs(out)
+    record = []
+    try:
+        stage_module_system(os.path.abspath(args.module_system), src, record)
+        addons = apply_wse2_sdk(os.path.abspath(args.wse2_sdk), src, record)
+        wrapped = wrap_lists(src, addons)
+        install_our_code(os.path.abspath(args.src), src, export_dir)
+        write(os.path.join(out, "inputs.txt"), "\n".join(record) + "\n")
+        print("staged %s (wrapped: %s)" % (src, ", ".join(wrapped)))
+        if args.stage_only:
+            return 0
+        run_steps(src, args.py27)
+    except BuildError as e:
+        print("BUILD FAILED: %s" % e)
+        return 1
+
+    pinned = os.path.join(os.path.abspath(args.src), "variables.txt")
+    built = os.path.join(export_dir, "variables.txt")
+    if os.path.isfile(built) and (not os.path.isfile(pinned) or read(built) != read(pinned)):
+        shutil.copy(built, os.path.join(out, "variables.txt.new"))
+        print("NOTE: the global variables changed. Check build/variables.txt.new (existing names must keep their"
+              " order) and copy it to src/variables.txt.")
+    print("built %s" % export_dir)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

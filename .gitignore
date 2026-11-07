@@ -1,0 +1,23 @@
+# Build output (tools/build.py)
+build/
+
+# Inputs we never commit: TaleWorlds' module system, WSE2, game files
+inputs/
+*.zip
+
+# Python
+*.pyc
+__pycache__/
+
+# Game run leftovers
+*.sav
+*.dmp
+*.log
+rgl_log*.txt
+
+# Editors and OS
+.vs/
+.vscode/
+*.swp
+Thumbs.db
+desktop.ini
