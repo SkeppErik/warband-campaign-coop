@@ -10,6 +10,8 @@
 - `fc_server_new.bat`: the same with a new world (its first save overwrites `sg00.sav`).
 - Menus (M3 part 1): ride into a town, village or party: native's menu should open on your client. Options that
   need a mission, a trade/loot screen, a conversation or waiting say "not available in co-op yet".
+- Trade (M3 part 2): in a town, the trade options open native's trade screen with the merchant's goods and your
+  gold; buy and sell, close it, and the menu comes back. Your inventory window (I) should keep what you rearrange.
 - Server console commands (ours): `fc_save` saves the world now; `fc_characters` lists the characters, whose they
   are and who is connected.
 - `fc_client.bat`: starts a game client with our module. In the game: **Multiplayer**, then WSE2's **Join a

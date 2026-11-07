@@ -1272,3 +1272,13 @@ fc_ctx_player
 fc_main_party
 fc_player_troop
 fc_menu_no
+fc_inv_check
+fc_screen_kind
+fc_screen_troop
+fc_items_dict
+fc_items_dict_ok
+fc_prices_dict
+fc_prices_dict_ok
+fc_inv_troop_0
+fc_inv_troop_1
+fc_screen_open

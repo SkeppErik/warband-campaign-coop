@@ -28,6 +28,8 @@ CTX_MESH = "mesh"
 CTX_NOTHING = "nothing"
 CTX_UNAVAILABLE = "unavailable"
 CTX_MESSAGE = "message"
+CTX_TRADE = "trade"
+CTX_LOOT = "loot"
 
 _ops = dict((k, v) for k, v in globals().items() if isinstance(v, int) and k.islower() and not k.startswith("_"))
 _change_screens = sorted(k for k in _ops if k.startswith("change_screen_"))
@@ -40,6 +42,8 @@ CTX_OPS = {"display_message": CTX_MESSAGE, "display_log_message": CTX_MESSAGE, "
 for _name in _change_screens:
     CTX_OPS[_name] = CTX_CLOSE if _name in ("change_screen_return", "change_screen_map", "change_screen_quit") \
         else CTX_UNAVAILABLE
+CTX_OPS["change_screen_trade"] = CTX_TRADE   # fc_items: screen sessions
+CTX_OPS["change_screen_loot"] = CTX_LOOT
 CTX_OPS = dict((k, v) for k, v in CTX_OPS.items() if k in _ops)
 
 MAX_OP_ARGS = 4   # every (operation, 0..4 arguments) gets a script: each list compiles in its own process, so the
@@ -115,6 +119,8 @@ def _op_scripts():
                 (str_store_substring, s66, s67, 0, ":len"),
                 (multiplayer_send_string_to_player, ":player", fc_event_message, s66),
             ]
+        elif kind in (CTX_TRADE, CTX_LOOT) and n >= 1:
+            inside = [(assign, "$fc_screen_kind", 1 if kind == CTX_TRADE else 2), (assign, "$fc_screen_troop", ":p1")]
         elif kind in (CTX_NOTHING, CTX_MESSAGE):
             inside = []
         else:
@@ -320,6 +326,7 @@ server_scripts = [
             (assign, "$fc_next_menu", 0),
             (assign, "$fc_menu_close", 0),
             (assign, "$fc_unavailable", 0),
+            (assign, "$fc_screen_kind", 0),
             (store_add, ":script", "script_fc_mo_0", ":menu"),
             (try_begin),
                 (call_script, ":script"),
@@ -366,6 +373,9 @@ server_scripts = [
             (multiplayer_send_3_int_to_player, ":player", fc_event, fc_msg_notice, fc_notice_unavailable, 0),
             (call_script, "script_fc_menu_show", ":player"),
         (else_try),
+            (gt, "$fc_screen_kind", 0),
+            (call_script, "script_fc_items_session_start", ":player"),
+        (else_try),
             (eq, "$fc_menu_close", 1),
             (call_script, "script_fc_menu_close", ":player"),
         (else_try),
@@ -395,6 +405,7 @@ server_scripts = [
         (assign, "$fc_next_menu", 0),
         (assign, "$fc_menu_close", 0),
         (assign, "$fc_unavailable", 0),
+        (assign, "$fc_screen_kind", 0),
         (try_begin),
             (call_script, "script_game_event_party_encounter", ":encountered", ":encountered_2"),
         (try_end),
@@ -417,11 +428,16 @@ server_scripts = [
             (assign, "$fc_next_menu", 0),
             (assign, "$fc_menu_close", 0),
             (assign, "$fc_unavailable", 0),
+            (assign, "$fc_screen_kind", 0),
             (store_add, ":script", "script_fc_mk_0", ":menu"),
             (try_begin),
                 (call_script, ":script", ":k"),
             (try_end),
             (call_script, "script_fc_menu_after", ":player", 0),
+            (try_begin),
+                (troop_slot_eq, "$fc_player_troop", fc_slot_troop_screen_kind, 0),
+                (call_script, "script_fc_send_inventory", ":player", 0, "$fc_player_troop"),
+            (try_end),
         (else_try),
             # stale choice (the menu changed meanwhile): show the current one again
             (gt, ":current", 0),
@@ -536,6 +552,9 @@ def _remote_menu():
             (multiplayer_send_3_int_to_server, fc_event, fc_msg_menu_choice, "$fc_menu_no", ":k"),
         ]))
     return ("fc_remote", 0, "{s40}", "none", [
+        (try_begin),
+            (call_script, "script_fc_client_screen_done"),   # back from a trade/loot screen (fc_items)
+        (try_end),
         (str_store_string, s65, "@t"),
         (dict_get_str, s40, "$fc_menu_dict", s65),
         (try_begin),

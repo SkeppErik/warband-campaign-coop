@@ -48,7 +48,23 @@ mirrored), so native menus can't run on the client. They run on the server, for 
 6. **Battles.** Until M4 the server never simulates a battle event that includes a player's party
    (`game_event_simulate_battle` ends it); AI parties still don't target player parties.
 
+## Items: trade, loot and the player's inventory (`src/fc_items.py`)
+
+- The engine never sends troop inventories or troop gold (only the multiplayer `player_set_gold`), so we do.
+- `change_screen_trade` / `change_screen_loot` in a player's context start a screen session: the server sends both
+  inventories and (trade) the price factors of every item involved, computed by native's price scripts for that
+  player; the client fills its copies of the troops, keeps the factors (its price scripts return them) and opens
+  the native screen. Back in the menu (or on the map), the client sends both inventories; the server accepts them
+  if every item kind's count over both troops and the gold sum are unchanged, runs native's buy/sell events for
+  what changed hands (town prices), and shows the menu again. One player per merchant at a time.
+- Own inventory: after an inventory/party/character window (`wse_window_opened`) the client sends its inventory
+  from the map; the server accepts rearranging and dropping only (no new items, same gold), else sends its own.
+- The server sends the player's inventory on join and after each menu choice (menus change gold and items).
+- Received inventories wait in a WSE2 dictionary (buffer troops would change the troop list and break saves).
+- Deviations: prices don't rise while you buy within one visit (they change when the trade is done); the server
+  checks that nothing is created, not that the client paid native's price.
+
 ## Not yet (later milestones)
 
-Missions (walking in towns, battles, sieges), trade/inventory/loot screens, conversations, waiting/resting,
+Missions (walking in towns, battles, sieges), conversations (and the trades they open), waiting/resting,
 presentations started from menus. Each says "not available in co-op yet" and keeps the player in the menu.

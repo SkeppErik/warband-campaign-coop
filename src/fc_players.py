@@ -113,6 +113,7 @@ scripts = [
             (player_set_troop_id, ":player_no", ":troop"),
             (player_set_party_id, ":player_no", ":party"),
             (multiplayer_send_2_int_to_player, ":player_no", fc_event, fc_msg_your_party, ":party"),
+            (call_script, "script_fc_send_inventory", ":player_no", 0, ":troop"),
             (assign, reg0, ":player_no"),
             (assign, reg1, ":slot"),
             (assign, reg2, ":new"),
