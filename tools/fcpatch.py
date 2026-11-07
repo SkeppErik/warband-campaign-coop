@@ -99,6 +99,11 @@ def append_ops(target, id, ops, origin=""):
     return Patch(target, "ops", id=id, ops=list(ops), where="end", origin=origin)
 
 
+def edit_all(target, fn, origin=""):
+    """fn(entry) -> entry for every entry the list has at that point (put it first to touch only native's)."""
+    return Patch(target, "edit_all", fn=fn, origin=origin)
+
+
 def edit_simple_trigger(index, fn, interval, origin=""):
     """Simple triggers have no ids: index into the native list, checked against its interval."""
     return Patch("simple_triggers", "edit_index", index=index, fn=fn, interval=interval, origin=origin)
@@ -186,6 +191,10 @@ def apply_one(entries, p):
         new = list(p.args["fn"](list(entries)))
         _check_new_ids(entries, new, p)
         return list(entries) + new
+    if kind == "edit_all":
+        if not entries:
+            raise PatchError("%s: the list is empty" % p.describe())
+        return [p.args["fn"](e) for e in entries]
     if kind == "edit_index":
         i = p.args["index"]
         if i >= len(entries) or entries[i][0] != p.args["interval"]:

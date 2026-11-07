@@ -10,6 +10,8 @@ fc_max_players = 16
 fc_slot_troop_owner = 900   # player_no + 1 of the player connected with this pool troop now, 0 = nobody
 fc_slot_troop_bound = 901   # 1 = this pool troop is somebody's character (fc_slot_troop_uid says whose)
 fc_slot_troop_uid = 902     # that player's unique id (player_get_unique_id)
+fc_slot_troop_menu = 903    # menu_no + 1 of the menu the player sees (server, docs/encounters.md), 0 = none
+fc_slot_ctx_base = 1000     # 1000 + i: the player's copy of menu global i (and trp_player's: the world's copy)
 
 # Battles: how close (map distance) another player must be to the fight to be offered to join it.
 # Unlimited while testing; a native-like value comes later.
@@ -19,3 +21,12 @@ fc_join_distance = 1000000
 # 127, so all of ours share one event id; the first value says which message it is, up to three values follow.
 fc_event = 125
 fc_msg_your_party = 1   # server -> client: (party): this is your party on the map
+fc_msg_menu_open = 2    # server -> client: (menu_no, mesh or -1): a menu follows
+fc_msg_menu_field = 3   # server -> client: (field): text pieces that follow go to the menu text (-1) or option k
+fc_msg_menu_show = 4    # server -> client: (menu_no): show it
+fc_msg_menu_close = 5   # server -> client: back to the map
+fc_msg_notice = 6       # server -> client: (code): a message to show
+fc_msg_menu_choice = 7  # client -> server: (menu_no, option k)
+fc_event_text = 126     # string messages (text pieces of up to 250 characters, s0 on the client)
+fc_event_message = 127  # string message: show it (display_message of native code running for that player)
+fc_notice_unavailable = 1   # "not available in co-op yet"

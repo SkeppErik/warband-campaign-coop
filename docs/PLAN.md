@@ -46,8 +46,17 @@ Each milestone ends with a build, and with an in-game check only when the owner 
   (`auto_save` into its `--save-no` slot) when a player leaves and once a game day, and `fc_server.bat` continues
   it with `--load-game`. Open: character creation (native's start menus on a campaign client), what a new player
   starts with, more characters than pool slots, a separate character store (moving characters between worlds).
+  **Owner's check 2026-11-07:** join, leave and rejoin work and the party comes back where it was; the world saves
+  on leave. Found: the client ran native's world triggers (script errors) -> guarded to server/single player;
+  bandits locked a player's party in repeated simulated battles -> AI no longer targets player parties until M3;
+  the client showed the training field until its party arrived -> joining screen. Owner confirmed all three fixed.
 - **M3 Life on the map:** clock and pause rules, encounters and their menus, talking to parties, towns and villages
   (trade, recruit, tavern), party upkeep (food, morale, wages, desertion), prisoners.
+  **Part 1 built 2026-11-08; owner checked in a village: right text and options, world-only options work.** Native
+  menus run on the server for the player and show on the client
+  (`docs/encounters.md`, `src/fc_menus.py`): reaching a town, village or party opens native's menu; options work
+  where they only change the world (recruiting, leaving, menu to menu); missions, trade/loot screens,
+  conversations and waiting say "not available in co-op yet". Native code's messages reach the player.
 - **M4 Local battles:** fight on your own client, casualties/XP/loot/prisoners applied as native does.
 - **M5 Shared battles:** players fight together on a battle server.
 - **M6 Our features, rebuilt:** joining battles under way, raiding villages, conversations on the map, sieges
@@ -55,6 +64,20 @@ Each milestone ends with a build, and with an in-game check only when the owner 
 - **M7 The rest of the campaign:** arena, tournaments, training grounds, quests, courtship, companions, kingdoms
   (mercenary, vassal, fiefs, marshals), enterprises.
 - **M8 Ship:** an installer package friends can use, a one-click host and join.
+
+## Deviations from single player
+
+Everything should work as native does; what doesn't is listed here (temporary ones go away with their milestone).
+
+- The campaign clock keeps running while a player is in a battle (battle design, below).
+- Temporary until M3: AI parties never choose a player's party as a target (`src/fc_authority.py`,
+  `game_check_party_sees_party`), because the server has no encounter for player parties yet.
+- At most `fc_max_players` (16) different people per world: each gets a pool character for good.
+- A joining player sees a "Joining the campaign" screen for a moment (the server tells the client its party).
+- Time doesn't stop in menus (a player in a menu stays where they are; the world goes on).
+- Menu globals (147, listed by the build in `fc_menu_globals.txt`) are kept per player: what one player's menus
+  set (honour, kingdom choices, town visit state...) is theirs, and world triggers see the world's copy.
+- Temporary until M4: a battle event with a player's party is never auto-resolved (the player chooses in the menu).
 
 ## Battle design (decided 2026-11-07)
 

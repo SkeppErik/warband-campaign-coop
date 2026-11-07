@@ -188,9 +188,11 @@ def install_our_code(our_src, src, export_dir):
     write(path, text)
 
     os.makedirs(export_dir)
+    # process_init.py deletes export_dir/variables.txt and starts from variables.txt in the module system folder
+    # (its working directory), so the pinned order goes there
     pinned = os.path.join(our_src, "variables.txt")
     if os.path.isfile(pinned):
-        shutil.copy(pinned, export_dir)
+        shutil.copy(pinned, os.path.join(src, "variables.txt"))
 
 
 def process_steps(src):

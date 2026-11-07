@@ -33,6 +33,13 @@ class AddTests(unittest.TestCase):
         clash = lambda entries: [entries[1]]
         self.assertRaises(fp.PatchError, fp.apply, "scripts", SCRIPTS, [fp.add_from("scripts", clash)])
 
+    def test_edit_all_touches_every_entry_present(self):
+        guard = lambda e: (e[0], [("guard",)] + list(e[1]))
+        out = fp.apply("simple_triggers", SIMPLE, [fp.edit_all("simple_triggers", guard),
+                                                   fp.add("simple_triggers", [(0, [("ours",)])])])
+        self.assertEqual([t[1][0] for t in out], [("guard",), ("guard",), ("ours",)])
+        self.assertRaises(fp.PatchError, fp.apply, "simple_triggers", [], [fp.edit_all("simple_triggers", guard)])
+
     def test_entries_without_ids_can_be_added(self):
         out = fp.apply("simple_triggers", SIMPLE, [fp.add("simple_triggers", [(0, []), (0, [])])])
         self.assertEqual(len(out), 4)

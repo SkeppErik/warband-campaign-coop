@@ -8,6 +8,8 @@
   `Documents\Mount&Blade Warband WSE2\CampaignCoop\Savegames`) if it exists, else starts a new one. The server
   saves there when a player leaves and once a game day.
 - `fc_server_new.bat`: the same with a new world (its first save overwrites `sg00.sav`).
+- Menus (M3 part 1): ride into a town, village or party: native's menu should open on your client. Options that
+  need a mission, a trade/loot screen, a conversation or waiting say "not available in co-op yet".
 - Server console commands (ours): `fc_save` saves the world now; `fc_characters` lists the characters, whose they
   are and who is connected.
 - `fc_client.bat`: starts a game client with our module. In the game: **Multiplayer**, then WSE2's **Join a

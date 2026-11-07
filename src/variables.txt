@@ -1258,3 +1258,17 @@ g_multiplayer_ccoop_difficulty_string_i
 g_ccoop_king_troop
 g_prison_cart_previous_point
 fc_my_party
+fc_joining_shown
+fc_next_menu
+fc_menu_close
+fc_unavailable
+fc_menu_dict
+fc_menu_dict_ok
+fc_menu_count
+fc_menu_field
+fc_menu_mesh
+fc_ok
+fc_ctx_player
+fc_main_party
+fc_player_troop
+fc_menu_no
