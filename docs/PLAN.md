@@ -46,6 +46,25 @@ Each milestone ends with a build, and with an in-game check only when the owner 
   (mercenary, vassal, fiefs, marshals), enterprises.
 - **M8 Ship:** an installer package friends can use, a one-click host and join.
 
+## Battle design (decided 2026-11-07)
+
+1. Player A meets an enemy on the map and chooses to fight.
+2. Every other player within `fc_join_distance` of the fight is offered to join, on A's side.
+3. Whoever accepts fights on A's side; each player commands their own troops (A orders A's soldiers, B orders B's).
+4. Whoever declines, or is too far away, carries on with the campaign as normal while the battle runs.
+5. `fc_join_distance` is unlimited while testing.
+
+Recommended details (owner to confirm):
+- One path for every battle, solo or joined: the battle runs on a battle server, and the campaign connection stays
+  open (our engine finding), so nobody disconnects.
+- The offer goes out when the battle starts; a player can also join while it runs, if still in range and not busy
+  (a menu, another fight).
+- The parties in the fight stay frozen on the map. The campaign clock keeps running for everyone else (a
+  difference from single player, where a battle takes no time).
+- Each player's party takes its own casualties and gets its own XP, loot and prisoners, split by contribution as
+  native splits a victory with allies.
+- Commanding your own troops: the engine can assign soldiers to a player for orders; confirm when building M5.
+
 ## Build design
 
 The repository holds no TaleWorlds or WSE2 files. `tools/build.py` unpacks the official module system, applies the
