@@ -1,4 +1,5 @@
-"""Players on the shared map (M1): every connected player gets a troop and a party from our pool.
+"""Players on the shared map (M1): every connected player gets a troop and a party from our pool, and their client's
+map camera follows that party.
 
 The pool troops and parties are copies of native's own player troop and main party, so they start with native's
 look, flags and faction. A pool party starts empty and disabled; joining puts the player's troop in it as leader
@@ -76,10 +77,20 @@ scripts = [
             (party_add_leader, ":party", ":troop"),
             (enable_party, ":party"),
             (party_relocate_near_party, ":party", "p_town_1", 2),
+            (multiplayer_send_2_int_to_player, ":player_no", fc_event, fc_msg_your_party, ":party"),
             (assign, reg0, ":player_no"),
             (assign, reg1, ":slot"),
             (display_message, "@[fc] {s0} joined: player {reg0}, slot {reg1}"),
         (try_end),
+    ]),
+
+    # Client, fc_msg_your_party. Input: party. The map camera follows the player's own party.
+    ("fc_client_set_own_party", [
+        (store_script_param, ":party", 1),
+        (assign, "$fc_my_party", ":party"),
+        (set_camera_follow_party, ":party", 1),
+        (str_store_party_name, s0, ":party"),
+        (display_message, "@[fc] your party: {s0}"),
     ]),
 
     # Input: player_no. Frees the player's pool slot and takes the party off the map.

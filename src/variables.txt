@@ -1257,3 +1257,4 @@ g_prison_cart_point
 g_multiplayer_ccoop_difficulty_string_i
 g_ccoop_king_troop
 g_prison_cart_previous_point
+fc_my_party

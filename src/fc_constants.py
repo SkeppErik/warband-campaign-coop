@@ -11,3 +11,8 @@ fc_slot_troop_owner = 900   # player_no + 1 of the player using this pool troop,
 # Battles: how close (map distance) another player must be to the fight to be offered to join it.
 # Unlimited while testing; a native-like value comes later.
 fc_join_distance = 1000000
+
+# Network messages (docs/protocol.md). Native uses multiplayer event ids up to 124 and the engine likely caps them at
+# 127, so all of ours share one event id; the first value says which message it is, up to three values follow.
+fc_event = 125
+fc_msg_your_party = 1   # server -> client: (party): this is your party on the map

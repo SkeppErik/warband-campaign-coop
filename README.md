@@ -26,10 +26,11 @@ The result is in `build/module`. To try it, install it into a **test copy** of t
 the tool refuses anything inside a Steam library):
 
 ```
-python tools/install.py --game <test copy of Warband>
+python tools/install.py --game <test copy of Warband> --wse2-sdk <WSE2 SDK folder>
 ```
 
-It creates `Modules/CampaignCoop` from native's own module folder plus the built files. Requirements: Python 2.7 (the module system doesn't run on Python 3; on Windows
+It creates `Modules/CampaignCoop` from native's own module folder plus the built files, and copies the test
+launchers from `testing/` into the game folder (see `testing/README.md`). Requirements: Python 2.7 (the module system doesn't run on Python 3; on Windows
 the build looks for `C:\Python27\python.exe`, or pass `--py27`).
 
 ## Layout
@@ -38,8 +39,9 @@ the build looks for `C:\Python27\python.exe`, or pass `--py27`).
 |---|---|
 | `src/` | The mod: `fc_*.py` files, each with its patches; `fc_patches.py` lists them all |
 | `tools/` | `build.py` (the build), `fcpatch.py` (the patch operations), `install.py` (into a test copy) |
-| `tests/` | Tests for the tools: `python tests/test_fcpatch.py`, `python tests/test_build.py` (Python 2.7 or 3) |
-| `docs/` | The plan and the design notes |
+| `tests/` | Tests for the tools: `python tests/test_<name>.py` (Python 2.7 or 3) |
+| `testing/` | Launchers for a test copy: campaign server, client |
+| `docs/` | The plan, the network protocol, the build inputs |
 
 ## License
 

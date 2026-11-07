@@ -35,6 +35,9 @@ Each milestone ends with a build, and with an in-game check only when the owner 
   (copied from the Steam install, WSE2 added, nothing from other mods). **Done 2026-11-07:** the full build runs
   against module system 1.171 and the official WSE2 SDK; `tools/install.py` puts it into the test copy.
 - **M1 Shared map:** dedicated campaign server, two clients on one map with their own parties; joining, leaving.
+  **Built 2026-11-07, not tested:** player pool (`src/fc_players.py`), the protocol (`docs/protocol.md`,
+  `src/fc_net.py`), the client's camera following its own party, test launchers (`testing/`) installed into the
+  test copy. Waiting for the owner's go for the first in-game check.
 - **M2 Characters and saves:** identity, character creation, the character store, world save and restore, rejoin.
 - **M3 Life on the map:** clock and pause rules, encounters and their menus, talking to parties, towns and villages
   (trade, recruit, tavern), party upkeep (food, morale, wages, desertion), prisoners.
@@ -79,7 +82,12 @@ native ids never move. The order of global variables is pinned in `src/variables
   in trigger parameter 1? (`src/fc_players.py` assumes so.)
 - How a dedicated campaign server starts its world (native `game_start`, a new or a loaded save) and what a
   connecting client is shown before it has a party.
-- Whether the client follows its own party on the map by itself or needs to be told.
+- Whether the client follows its own party on the map by itself or needs to be told (we tell it:
+  `fc_msg_your_party` + `set_camera_follow_party`).
+- Whether native's `game_receive_network_message` is called on a campaign server and client, as in a mission.
+- Whether the server config (`testing/fc_server.txt`) is enough to start the campaign world, and what WSE2's
+  "Join campaign" button asks for.
+- Whether two clients can run on one PC (Warband normally allows one instance); otherwise test with a second PC.
 - Our slot numbers (`fc_slot_*` = 900+) must not collide with native's: add a build check once the module system
   is in.
 

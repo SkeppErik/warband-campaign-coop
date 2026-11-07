@@ -1,0 +1,4 @@
+set_server_name CampaignCoop test
+set_max_players 16
+set_port 7240
+start
