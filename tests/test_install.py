@@ -44,6 +44,7 @@ class InstallTests(unittest.TestCase):
         with open(os.path.join(self.game, "Modules", "Native", "game_variables.txt")) as f:
             self.assertEqual(f.read(), "a = 1\nb = 2\n")   # native's own folder is left alone
         self.assertTrue(os.path.isfile(os.path.join(self.game, "fc_server.bat")))
+        self.assertTrue(os.path.isfile(os.path.join(module, "module_config.ini")))
 
     def test_refuses_a_steam_library(self):
         steam = os.path.join(self.tmp, "SteamLibrary", "steamapps", "common", "MountBlade Warband")

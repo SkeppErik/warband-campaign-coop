@@ -4,7 +4,8 @@
                             [--name CampaignCoop]
 
 The module folder is native's own Modules/Native (its resources, textures, sounds, module.ini) with the built
-*.txt files on top and WSE2's game variables added to its game_variables.txt (the "Join campaign" button). The test
+*.txt files on top, our files from module_files/ (module_config.ini: WSE2 settings), and WSE2's game variables added
+to its game_variables.txt (the "Join campaign" button). The test
 launchers in testing/ go into the game folder. Refuses to touch a game inside a Steam library: never install into
 your real game.
 """
@@ -52,6 +53,9 @@ def main(argv=None):
     for name in texts:
         shutil.copy(os.path.join(built, name), target)
     merge_game_variables(os.path.join(target, "game_variables.txt"), addon)
+    extras = os.path.join(REPO, "module_files")
+    for name in os.listdir(extras):
+        shutil.copy(os.path.join(extras, name), target)
     launchers = os.path.join(REPO, "testing")
     for name in os.listdir(launchers):
         if name != "README.md":
