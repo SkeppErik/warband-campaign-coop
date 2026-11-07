@@ -54,7 +54,8 @@ native ids never move. The order of global variables is pinned in `src/variables
 
 ## Open questions for M1 (check in game)
 
-- Does WSE2's campaign server fire `ti_on_player_join` / `ti_on_player_exit` as simple triggers, with the player
+- Does WSE2's campaign server fire `ti_server_player_joined` / `ti_on_player_exit` (native: mission templates only)
+  as simple triggers on the map, with the player
   in trigger parameter 1? (`src/fc_players.py` assumes so.)
 - How a dedicated campaign server starts its world (native `game_start`, a new or a loaded save) and what a
   connecting client is shown before it has a party.

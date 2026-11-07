@@ -118,6 +118,14 @@ class BuildTests(unittest.TestCase):
             f.write("def save(skins):\n  return skins\n")
         self.assertEqual(self.run_build("--stage-only"), 1)
 
+    def test_a_slot_number_inside_native_ones_stops_the_build(self):
+        with open(os.path.join(self.src, "fc_constants.py"), "a") as f:
+            f.write("fc_slot_troop_owner = 1\n")
+        self.assertEqual(self.run_build("--stage-only"), 1)
+        with open(os.path.join(self.src, "fc_constants.py"), "a") as f:
+            f.write("fc_slot_troop_owner = 2\n")
+        self.assertEqual(self.run_build("--stage-only"), 1)   # the first definition still collides
+
     def test_a_failing_step_stops_the_build(self):
         with open(os.path.join(self.ms, "process_init.py"), "w") as f:
             f.write("print('ERROR: something')\n")

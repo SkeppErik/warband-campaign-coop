@@ -21,11 +21,13 @@ def _native(entries, id, what):
 
 def _pool_troops(troops):
     base = _native(troops, "player", "troop")
-    return [("fc_player_%d" % i, "Player", "Players") + tuple(base[3:]) for i in range(fc_max_players)]
+    # same type as native's entry: process_troops.py edits troops in place, so they must be lists
+    return [type(base)(["fc_player_%d" % i, "Player", "Players"] + list(base[3:])) for i in range(fc_max_players)]
 
 
 def _pool_parties(parties):
-    base = list(_native(parties, "main_party", "party"))
+    native = _native(parties, "main_party", "party")
+    base = list(native)
     out = []
     for i in range(fc_max_players):
         p = list(base)
@@ -33,7 +35,7 @@ def _pool_parties(parties):
         p[1] = "Player"
         p[2] = base[2] | pf_disabled
         p[10] = []   # members: the player's troop is added on join
-        out.append(tuple(p))
+        out.append(type(native)(p))
     return out
 
 
@@ -97,9 +99,10 @@ scripts = [
     ]),
 ]
 
-# VERIFY at M1: that WSE2's campaign server fires these as simple triggers with the player in trigger param 1.
+# VERIFY at M1: native allows these two only in mission templates; WSE2's campaign server is assumed to fire them
+# as simple triggers on the map, with the player in trigger parameter 1.
 simple_triggers = [
-    (ti_on_player_join, [
+    (ti_server_player_joined, [
         (multiplayer_is_server),
         (multiplayer_is_campaign),
         (store_trigger_param_1, ":player_no"),

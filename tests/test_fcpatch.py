@@ -63,6 +63,13 @@ class ChangeTests(unittest.TestCase):
         out = fp.apply("game_menus", MENUS, [fp.prepend_ops("game_menus", "town", [("gate",)])])
         self.assertEqual(out[0][4], [("gate",), ("menu_op",)])
 
+    def test_an_edited_entry_keeps_its_type(self):
+        troops = [["player", "Player", "Player", 0, [("op",)]]]
+        out = fp.apply("scripts", troops, [fp.append_ops("scripts", "player", [("x",)])])
+        self.assertTrue(isinstance(out[0], list))
+        out = fp.apply("scripts", SCRIPTS, [fp.append_ops("scripts", "encounter", [("x",)])])
+        self.assertTrue(isinstance(out[1], tuple))
+
     def test_the_native_list_is_left_alone(self):
         fp.apply("scripts", SCRIPTS, [fp.append_ops("scripts", "encounter", [("x",)])])
         self.assertEqual(SCRIPTS[1], ("encounter", [("op", 2)]))

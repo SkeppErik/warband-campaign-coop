@@ -141,11 +141,12 @@ def _index_of(entries, id, patch):
 
 
 def _with_field(entry, field, value):
-    entry = list(entry)
-    if field >= len(entry):
+    """A copy of entry with one field changed, of the same type (native troops are lists, most others tuples)."""
+    items = list(entry)
+    if field >= len(items):
         raise PatchError("entry %r has no field %d" % (entry_id(entry), field))
-    entry[field] = value
-    return tuple(entry)
+    items[field] = value
+    return type(entry)(items)
 
 
 def _insert(items, new, before, after, first, patch, id_of=entry_id):

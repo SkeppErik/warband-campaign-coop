@@ -159,6 +159,16 @@ def wrap_lists(src, addons):
     return wrapped
 
 
+def check_slots(native_constants, our_constants):
+    """Our slot numbers (fc_slot_* = N) must sit above every native slot_* number, whatever the kind: party,
+    town, center and village slots share one numbering, so a per-kind check could miss a collision."""
+    native = [int(n) for n in re.findall(r"^slot_\w+\s*=\s*(\d+)\s*(?:#.*)?$", native_constants, re.M)]
+    highest = max(native) if native else -1
+    for name, n in re.findall(r"^(fc_slot_\w+)\s*=\s*(\d+)", our_constants, re.M):
+        if int(n) <= highest:
+            raise BuildError("%s = %s collides with native slots (native goes up to %d)" % (name, n, highest))
+
+
 def install_our_code(our_src, src, export_dir):
     for name in os.listdir(our_src):
         if name.endswith(".py"):
@@ -166,7 +176,9 @@ def install_our_code(our_src, src, export_dir):
     shutil.copy(os.path.join(HERE, "fcpatch.py"), src)
 
     path = os.path.join(src, "module_constants.py")
-    write(path, read(path).rstrip() + "\n\n# --- Warband Campaign Co-op\nfrom fc_constants import *\n")
+    native = read(path)
+    check_slots(native, read(os.path.join(our_src, "fc_constants.py")))
+    write(path, native.rstrip() + "\n\n# --- Warband Campaign Co-op\nfrom fc_constants import *\n")
 
     path = os.path.join(src, "module_info.py")
     text, n = re.subn(r"^export_dir\s*=.*$", "export_dir = %r" % (export_dir.replace("\\", "/").rstrip("/") + "/"),

@@ -5,5 +5,5 @@
 # freed on leave; a slot whose owner is no longer connected counts as free (a loaded world keeps stale owners).
 fc_max_players = 16
 
-# Our slot numbers sit far above native's. The build will check them against native's slot constants (to do).
+# Our slot numbers sit above all of native's (native goes up to 500 in 1.171); the build checks it.
 fc_slot_troop_owner = 900   # player_no + 1 of the player using this pool troop, 0 = free
