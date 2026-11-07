@@ -40,7 +40,7 @@ the build looks for `C:\Python27\python.exe`, or pass `--py27`).
 | `src/` | The mod: `fc_*.py` files, each with its patches; `fc_patches.py` lists them all |
 | `tools/` | `build.py` (the build), `fcpatch.py` (the patch operations), `install.py` (into a test copy) |
 | `tests/` | Tests for the tools: `python tests/test_<name>.py` (Python 2.7 or 3) |
-| `module_files/` | Files copied into the module folder as they are (`module_config.ini`: WSE2 settings) |
+| `module_files/` | Files copied into the module folder as they are (`module_config_template.ini`: WSE2 settings, copied by the game into Documents) |
 | `testing/` | Launchers for a test copy: campaign server, client |
 | `docs/` | The plan, the network protocol, the build inputs |
 

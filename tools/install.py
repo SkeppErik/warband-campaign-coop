@@ -4,8 +4,8 @@
                             [--name CampaignCoop]
 
 The module folder is native's own Modules/Native (its resources, textures, sounds, module.ini) with the built
-*.txt files on top, our files from module_files/ (module_config.ini: WSE2 settings), and WSE2's game variables added
-to its game_variables.txt (the "Join campaign" button). The test
+*.txt files on top, our files from module_files/ (module_config_template.ini: WSE2 settings), and WSE2's game variables added
+to its game_variables.txt. The test
 launchers in testing/ go into the game folder. Refuses to touch a game inside a Steam library: never install into
 your real game.
 """

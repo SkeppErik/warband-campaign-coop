@@ -35,10 +35,17 @@ Each milestone ends with a build, and with an in-game check only when the owner 
   (copied from the Steam install, WSE2 added, nothing from other mods). **Done 2026-11-07:** the full build runs
   against module system 1.171 and the official WSE2 SDK; `tools/install.py` puts it into the test copy.
 - **M1 Shared map:** dedicated campaign server, two clients on one map with their own parties; joining, leaving.
-  **Built 2026-11-07, not tested:** player pool (`src/fc_players.py`), the protocol (`docs/protocol.md`,
-  `src/fc_net.py`), the client's camera following its own party, test launchers (`testing/`) installed into the
-  test copy. Waiting for the owner's go for the first in-game check.
+  **Built 2026-11-07; first in-game checks by the owner:** the server runs its world; WSE2's "Join a Campaign"
+  button works (module ships `module_config_template.ini`, `docs/wse2-join.md`) and the client reaches the server;
+  our join trigger fires. The first join crashed the server (party_clear on a player party, fixed, not re-checked).
+  Still to see in game: the player's party on the map, the camera following it, two players (needs two PCs:
+  one WSE2 client per Windows session).
 - **M2 Characters and saves:** identity, character creation, the character store, world save and restore, rejoin.
+  **Part 1 built 2026-11-07, not tested:** a character (pool troop + party) is bound to the player's unique id on
+  first join; rejoining gives the same troop and party back where they were; the server saves the world
+  (`auto_save` into its `--save-no` slot) when a player leaves and once a game day, and `fc_server.bat` continues
+  it with `--load-game`. Open: character creation (native's start menus on a campaign client), what a new player
+  starts with, more characters than pool slots, a separate character store (moving characters between worlds).
 - **M3 Life on the map:** clock and pause rules, encounters and their menus, talking to parties, towns and villages
   (trade, recruit, tavern), party upkeep (food, morale, wages, desertion), prisoners.
 - **M4 Local battles:** fight on your own client, casualties/XP/loot/prisoners applied as native does.
@@ -75,21 +82,22 @@ WSE2 SDK as its README describes, and replaces each native list file with a wrap
 through our patches (`tools/fcpatch.py`, patches in `src/`). New troops and parties are appended after native's, so
 native ids never move. The order of global variables is pinned in `src/variables.txt` (part of the save format).
 
-## Open questions for M1 (check in game)
+## M1 questions: answers (reverse engineering of the WSE2 exes, `docs/wse2-join.md`)
 
-- Does WSE2's campaign server fire `ti_server_player_joined` / `ti_on_player_exit` (native: mission templates only)
-  as simple triggers on the map, with the player
-  in trigger parameter 1? (`src/fc_players.py` assumes so.)
-- How a dedicated campaign server starts its world (native `game_start`, a new or a loaded save) and what a
-  connecting client is shown before it has a party.
-- Whether the client follows its own party on the map by itself or needs to be told (we tell it:
-  `fc_msg_your_party` + `set_camera_follow_party`).
-- Whether native's `game_receive_network_message` is called on a campaign server and client, as in a mission.
-- Whether the server config (`testing/fc_server.txt`) is enough to start the campaign world, and what WSE2's
-  "Join campaign" button asks for.
-- Whether two clients can run on one PC (Warband normally allows one instance); otherwise test with a second PC.
-- Our slot numbers (`fc_slot_*` = 900+) must not collide with native's: add a build check once the module system
-  is in.
+- `ti_server_player_joined` / `ti_on_player_exit` fire on the campaign server as simple triggers, player in
+  trigger parameter 1 (joined: seen in game; exit: `mbnetNetworkServer::disconnectPlayer`).
+- The server starts its world with native `game_start` (`mbGame::start`), or loads save slot `--save-no N` with
+  `--load-game`.
+- A client is told its party by the engine (`player_set_party_id` sends it; the client sets its main party). Our
+  `fc_msg_your_party` + `set_camera_follow_party` stays as a sure way to point the camera.
+- `game_receive_network_message` (mapped script 0x27) runs on a campaign client for script events; nothing checks
+  the game type.
+- The server config is enough to start the world; the "Join a Campaign" button loads the campaign data and then
+  shows the server list (Internet / LAN / Favorites).
+- Two clients on one PC: no ("WSE2 Mutex", one per Windows session).
+- Slot numbers: `tools/build.py` `check_slots` fails the build if an `fc_slot_*` is not above every native `slot_*`.
+
+Still open in game: a client's view before it has a party; the leave path; the world save and `--load-game`.
 
 ## Needed before M0
 
